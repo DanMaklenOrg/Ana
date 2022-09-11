@@ -1,0 +1,10 @@
+# Binary
+bin/
+obj/
+
+# CDK
+cdk.out/
+
+dev.config.json
+appsettings.Development.json
+efbundle

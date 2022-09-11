@@ -1,0 +1,7 @@
+dataSources/
+
+dataSources.local.xml
+dataSources.xml
+projectSettingsUpdater.xml
+workspace.xml
+aws.xml
