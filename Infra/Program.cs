@@ -39,7 +39,12 @@ var mainCluster = Cluster.FromClusterAttributes(stack, "mainCluster", new Cluste
 
 var ecr = Repository.FromRepositoryName(stack, "dockerImageRepo", "ana");
 
-var lb = new ApplicationLoadBalancedEc2Service(stack, "service", new ApplicationLoadBalancedEc2ServiceProps
+var loadBalancer = ApplicationLoadBalancer.FromLookup(stack, "elb", new ApplicationLoadBalancerLookupOptions
+{
+    LoadBalancerArn = "arn:aws:elasticloadbalancing:eu-west-1:464787150360:loadbalancer/app/pika-servic-8XMM8IBK80XK/e98be4d8312e2d55",
+});
+
+var service = new ApplicationLoadBalancedEc2Service(stack, "service", new ApplicationLoadBalancedEc2ServiceProps
 {
     Cluster = mainCluster,
     ServiceName = "ana",
@@ -57,9 +62,10 @@ var lb = new ApplicationLoadBalancedEc2Service(stack, "service", new Application
     {
         Rollback = true,
     },
+    LoadBalancer = loadBalancer,
 });
 
-lb.TargetGroup.ConfigureHealthCheck(new HealthCheck
+service.TargetGroup.ConfigureHealthCheck(new HealthCheck
 {
     Path = "/health",
 });
