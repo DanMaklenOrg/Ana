@@ -1,0 +1,96 @@
+name: Ana CICD
+on:
+  push:
+    branches:
+      - master
+  pull_request: { }
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: "eu-west-1"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - uses: actions/checkout@v3
+      - run: dotnet restore
+      - run: dotnet publish -c Release --no-restore -o bin
+
+  build-image:
+    name: Build Image and Push to ECR
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to ECR
+        run: aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 464787150360.dkr.ecr.eu-west-1.amazonaws.com
+      - name: Build Image
+        run: docker build -t 464787150360.dkr.ecr.eu-west-1.amazonaws.com/ana:latest .
+      - name: Push Image to ECR
+        run: docker push 464787150360.dkr.ecr.eu-west-1.amazonaws.com/ana:latest
+
+  deploy-infra:
+    name: Deploy Core Infrastructure
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update -y
+      - run: sudo apt-get install nodejs npm -y
+      - run: sudo npm install -g aws-cdk
+      - run: cdk deploy --require-approval never
+        working-directory: Infra
+
+  deploy-db-migrations:
+    name: Deploy Database Migrations
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - run: dotnet tool install --global dotnet-ef
+      - uses: actions/checkout@v3
+      - name: Get SSM Parameter - Host
+        uses: marvinpinto/action-inject-ssm-secrets@v1.2.1
+        with:
+          ssm_parameter: /ana/database/host
+          env_variable_name: DATABASE_HOST
+      - name: Get SSM Parameter - PORT
+        uses: marvinpinto/action-inject-ssm-secrets@v1.2.1
+        with:
+          ssm_parameter: /ana/database/port
+          env_variable_name: DATABASE_PORT
+      - name: Get SSM Parameter - Username
+        uses: marvinpinto/action-inject-ssm-secrets@v1.2.1
+        with:
+          ssm_parameter: /ana/database/username
+          env_variable_name: DATABASE_USERNAME
+      - name: Get SSM Parameter - Password
+        uses: marvinpinto/action-inject-ssm-secrets@v1.2.1
+        with:
+          ssm_parameter: /ana/database/password
+          env_variable_name: DATABASE_PASSWORD
+      - name: Run Migrations
+        run: dotnet ef database update -p DataLayer -- $DATABASE_HOST $DATABASE_PORT $DATABASE_USERNAME $DATABASE_PASSWORD
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: [ build-image, deploy-infra, deploy-db-migrations ]
+    steps:
+      - uses: unfor19/install-aws-cli-action@v1.0.2
+      - run: aws ecs update-service --cluster CoreStack-MainEcsCluster03D3CD1A-JeWB2ioJZQEy --service ana --force-new-deployment

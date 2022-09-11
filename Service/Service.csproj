@@ -19,4 +19,8 @@
       <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include=".github\workflows\cicd.yml" />
+    </ItemGroup>
+
 </Project>
