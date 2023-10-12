@@ -2,11 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using Ana.DataLayer;
-using Ana.DataLayer.Model;
+using Ana.DataLayer.Models;
 using Ana.Service.DTOs;
 using Konscious.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,21 +15,21 @@ namespace Ana.Service.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AnaDbContext db;
+    private readonly IUserRepo userRepo;
     private readonly byte[] key;
 
-    public AuthController(AnaDbContext db, IOptions<ServiceConfig> config)
+    public AuthController(IUserRepo userRepo, IOptions<ServiceConfig> config)
     {
-        this.db = db;
-        this.key = Convert.FromBase64String(config.Value.AuthKeyBase64);
+        this.userRepo = userRepo;
+        this.key = Convert.FromBase64String(config.Value.AuthJwtKeyBase64);
     }
 
     [HttpPost("signin")]
     public async Task<ActionResult<SignInResponseDto>> SignIn(SingInRequestDto requestDto)
     {
-        UserDbModel? user = await this.db.Users.SingleOrDefaultAsync(user => user.Username == requestDto.Username);
+        UserDbModel? user = await this.userRepo.GetByUsername(requestDto.Username);
 
-        if (user is null || HashPassword(requestDto.Password, user.HashSalt) != user.HashedPassword)
+        if (user is null || HashPassword(requestDto.Password, user.Salt) != user.HashedPassword)
             return this.Unauthorized();
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -38,8 +37,8 @@ public class AuthController : ControllerBase
         {
             Claims = new Dictionary<string, object>
             {
-                { "sub", user.Guid.ToString("N") },
-                { "name", user.Username },
+                { JwtRegisteredClaimNames.Sub, user.Id.ToString("N") },
+                { JwtRegisteredClaimNames.Name, user.Username },
             },
             Expires = DateTime.Now.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(this.key), SecurityAlgorithms.HmacSha256),
@@ -59,13 +58,17 @@ public class AuthController : ControllerBase
 
         var user = new UserDbModel
         {
+            Id = Guid.NewGuid(),
             Username = requestDto.Username,
             HashedPassword = hashedPassword,
-            HashSalt = salt,
+            Salt = salt,
         };
 
-        await this.db.Users.AddAsync(user);
-        await this.db.SaveChangesAsync();
+        // This is not a transaction which can lead into issues with large scale. Should fix this.
+        if (await this.userRepo.GetByUsername(requestDto.Username) is not null)
+            throw new ArgumentException("User with this username already exist");
+
+        await this.userRepo.Create(user);
     }
 
     private static string HashPassword(string password, string salt)
