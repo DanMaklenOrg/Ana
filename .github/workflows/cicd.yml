@@ -28,8 +28,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    #    if: github.ref == 'refs/heads/master'
-    #    needs: [ build ]
+    if: github.ref == 'refs/heads/master'
+    needs: [ build ]
     steps:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v2
