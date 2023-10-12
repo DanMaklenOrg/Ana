@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using Ana.DataLayer;
+using Ana.DataLayer.Models;
 using Ana.Service.DTOs;
 using Konscious.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;

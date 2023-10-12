@@ -1,6 +1,6 @@
 using Amazon.DynamoDBv2.DataModel;
 
-namespace Ana.DataLayer;
+namespace Ana.DataLayer.Models;
 
 [DynamoDBTable("AnaTable")]
 public class UserDbModel

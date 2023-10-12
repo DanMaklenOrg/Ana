@@ -1,3 +1,5 @@
+using Ana.DataLayer.Models;
+
 namespace Ana.DataLayer;
 
 public interface IUserRepo

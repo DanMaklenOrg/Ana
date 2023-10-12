@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2.DataModel;
+using Ana.DataLayer.Models;
 
 namespace Ana.DataLayer;
 
