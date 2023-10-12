@@ -27,7 +27,6 @@ public class AuthController : ControllerBase
     [HttpPost("signin")]
     public async Task<ActionResult<SignInResponseDto>> SignIn(SingInRequestDto requestDto)
     {
-        // this.userRepo
         UserDbModel? user = await this.userRepo.GetByUsername(requestDto.Username);
 
         if (user is null || HashPassword(requestDto.Password, user.Salt) != user.HashedPassword)
