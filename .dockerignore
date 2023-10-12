@@ -1,8 +1,0 @@
-﻿bin/
-obj/
-
-Infra/
-
-Dockerfile
-*.md
-*.DotSettings
