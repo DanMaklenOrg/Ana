@@ -28,8 +28,13 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-#    if: github.ref == 'refs/heads/master'
-#    needs: [ build ]
+    #    if: github.ref == 'refs/heads/master'
+    #    needs: [ build ]
     steps:
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '6.0.x'
+      - uses: actions/checkout@v3
       - run: dotnet tool install -g Amazon.Lambda.Tools
       - run: dotnet lambda deploy-function Ana -pl Service -c Release --function-runtime dotnet6 --disable-interactive true
