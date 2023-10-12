@@ -14,7 +14,6 @@ public class UserRepo : IUserRepo
 
     public async Task Create(UserDbModel user)
     {
-        user.Id = Guid.NewGuid();
         user.PartitionKey = user.Id.ToString();
         user.SortKey = user.PartitionKey;
         await this.db.SaveAsync(user);

@@ -59,6 +59,7 @@ public class AuthController : ControllerBase
 
         var user = new UserDbModel
         {
+            Id = Guid.NewGuid(),
             Username = requestDto.Username,
             HashedPassword = hashedPassword,
             Salt = salt,
