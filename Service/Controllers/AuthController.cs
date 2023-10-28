@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         {
             Salt = Convert.FromBase64String(salt),
             Iterations = 2,
-            MemorySize = 15 * 1024,
+            MemorySize = 19 * 1024,
             DegreeOfParallelism = 1,
         };
         return Convert.ToBase64String(argon.GetBytes(128));
