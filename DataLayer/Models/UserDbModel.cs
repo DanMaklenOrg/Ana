@@ -1,25 +1,24 @@
-using Amazon.DynamoDBv2.DataModel;
+using System.Text.Json.Serialization;
 
 namespace Ana.DataLayer.Models;
 
-[DynamoDBTable("AnaTable")]
-public class UserDbModel
+public class UserDbModel : BaseDbModel
 {
-    [DynamoDBHashKey("pk")]
-    public string PartitionKey { get; set; } = default!;
-
-    [DynamoDBRangeKey("sk")]
-    public string SortKey { get; set; } = default!;
-
-    [DynamoDBProperty("id")]
+    [JsonPropertyName("id")]
     public Guid Id { get; set; }
 
-    [DynamoDBProperty("username")]
+    [JsonPropertyName("username")]
     public string Username { get; set; } = default!;
 
-    [DynamoDBProperty("hashedPassword")]
+    [JsonPropertyName("hashedPassword")]
     public string HashedPassword { get; set; } = default!;
 
-    [DynamoDBProperty("salt")]
+    [JsonPropertyName("salt")]
     public string Salt { get; set; } = default!;
+
+    public override void SetKeys()
+    {
+        PartitionKey = Id.ToString();
+        SortKey = Username;
+    }
 }

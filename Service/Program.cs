@@ -1,6 +1,5 @@
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
-using Ana.DataLayer;
+using Ana.DataLayer.Repositories;
 using Ana.Service;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -12,7 +11,6 @@ builder.Services.Configure<ServiceConfig>(builder.Configuration);
 
 // DB
 builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
-builder.Services.AddTransient<IDynamoDBContext, DynamoDBContext>();
 builder.Services.AddTransient<IUserRepo, UserRepo>();
 
 builder.Services.AddAuthentication();

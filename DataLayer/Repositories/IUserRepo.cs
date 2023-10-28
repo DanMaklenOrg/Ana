@@ -1,6 +1,6 @@
 using Ana.DataLayer.Models;
 
-namespace Ana.DataLayer;
+namespace Ana.DataLayer.Repositories;
 
 public interface IUserRepo
 {
