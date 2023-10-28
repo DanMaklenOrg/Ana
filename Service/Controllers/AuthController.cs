@@ -65,8 +65,8 @@ public class AuthController : ControllerBase
         };
 
         // This is not a transaction which can lead into issues with large scale. Should fix this.
-        // if (await this.userRepo.GetByUsername(requestDto.Username) is not null)
-        //     throw new ArgumentException("User with this username already exist");
+        if (await _userRepo.GetByUsername(requestDto.Username) is not null)
+            throw new ArgumentException("User with this username already exist");
 
         await _userRepo.Create(user);
     }
