@@ -1,8 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
-using Ana.DataLayer;
 using Ana.DataLayer.Models;
+using Ana.DataLayer.Repositories;
 using Ana.Service.DTOs;
 using Konscious.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
@@ -15,22 +15,22 @@ namespace Ana.Service.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly IUserRepo userRepo;
-    private readonly byte[] key;
+    private readonly IUserRepo _userRepo;
+    private readonly byte[] _key;
 
     public AuthController(IUserRepo userRepo, IOptions<ServiceConfig> config)
     {
-        this.userRepo = userRepo;
-        this.key = Convert.FromBase64String(config.Value.AuthJwtKeyBase64);
+        _userRepo = userRepo;
+        _key = Convert.FromBase64String(config.Value.AuthJwtKeyBase64);
     }
 
     [HttpPost("signin")]
     public async Task<ActionResult<SignInResponseDto>> SignIn(SingInRequestDto requestDto)
     {
-        UserDbModel? user = await this.userRepo.GetByUsername(requestDto.Username);
+        UserDbModel? user = await _userRepo.GetByUsername(requestDto.Username);
 
         if (user is null || HashPassword(requestDto.Password, user.Salt) != user.HashedPassword)
-            return this.Unauthorized();
+            return Unauthorized();
 
         var tokenHandler = new JwtSecurityTokenHandler();
         JwtSecurityToken token = tokenHandler.CreateJwtSecurityToken(new SecurityTokenDescriptor()
@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
                 { JwtRegisteredClaimNames.Name, user.Username },
             },
             Expires = DateTime.Now.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(this.key), SecurityAlgorithms.HmacSha256),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_key), SecurityAlgorithms.HmacSha256),
         });
 
         return new SignInResponseDto
@@ -65,10 +65,10 @@ public class AuthController : ControllerBase
         };
 
         // This is not a transaction which can lead into issues with large scale. Should fix this.
-        if (await this.userRepo.GetByUsername(requestDto.Username) is not null)
+        if (await _userRepo.GetByUsername(requestDto.Username) is not null)
             throw new ArgumentException("User with this username already exist");
 
-        await this.userRepo.Create(user);
+        await _userRepo.Create(user);
     }
 
     private static string HashPassword(string password, string salt)
@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         {
             Salt = Convert.FromBase64String(salt),
             Iterations = 2,
-            MemorySize = 15 * 1024,
+            MemorySize = 19 * 1024,
             DegreeOfParallelism = 1,
         };
         return Convert.ToBase64String(argon.GetBytes(128));
