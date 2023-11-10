@@ -24,6 +24,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 WebApplication app = builder.Build();
+app.UsePathBase("/ana");
 
 // Middleware Pipeline
 app.UseCors(b => b.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
