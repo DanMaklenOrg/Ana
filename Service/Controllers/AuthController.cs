@@ -12,7 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace Ana.Service.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IUserRepo _userRepo;
