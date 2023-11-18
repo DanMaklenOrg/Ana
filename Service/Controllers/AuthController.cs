@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
         _key = Convert.FromBase64String(config.Value.AuthJwtKeyBase64);
     }
 
-    [HttpPost("signin")]
+    [HttpPost("sign-in")]
     public async Task<ActionResult<SignInResponseDto>> SignIn(SingInRequestDto requestDto)
     {
         UserDbModel? user = await _userRepo.GetByUsername(requestDto.Username);
@@ -50,7 +50,7 @@ public class AuthController : ControllerBase
         };
     }
 
-    [HttpPost("signup")]
+    [HttpPost("sign-up")]
     public async Task SingUp(SignupRequestDto requestDto)
     {
         string salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
