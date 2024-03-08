@@ -20,7 +20,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
       - uses: actions/checkout@v3
       - run: dotnet restore
       - run: dotnet publish -c Release --no-restore -o bin
@@ -34,7 +34,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
       - uses: actions/checkout@v3
       - run: dotnet tool install -g Amazon.Lambda.Tools
-      - run: dotnet lambda deploy-function Ana -pl Service -c Release --function-runtime dotnet6 --disable-interactive true
+      - run: dotnet lambda deploy-function Ana -pl Service -c Release --function-runtime dotnet8 --disable-interactive true
