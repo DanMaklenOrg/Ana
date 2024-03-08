@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Ana.DataLayer.Models;
@@ -37,8 +38,7 @@ public class AuthController : ControllerBase
         {
             Claims = new Dictionary<string, object>
             {
-                { JwtRegisteredClaimNames.Sub, user.Id.ToString("N") },
-                { JwtRegisteredClaimNames.Name, user.Username },
+                { ClaimTypes.Name, user.Username },
             },
             Expires = DateTime.Now.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_key), SecurityAlgorithms.HmacSha256),
